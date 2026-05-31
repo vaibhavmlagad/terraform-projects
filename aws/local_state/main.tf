@@ -16,7 +16,7 @@ provider "aws" {
 
 resource "aws_instance" "my_demo_server" {
     ami           = "ami-07a00cf47dbbc844c"
-    instance_type = "t2.micro"
+    instance_type = "t3.micro"
 
     tags = {
         Name = "TerraformExampleInstance"
