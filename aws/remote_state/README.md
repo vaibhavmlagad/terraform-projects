@@ -59,6 +59,22 @@ The dev environment uses remote state backend configuration from `environments/c
 
 > Note: the `region` defined in the backend config is for the S3 backend itself, not for the AWS provider used by resources.
 
+- `use_lockfile = true`
+
+> Note: HashiCorp has deprecated DynamoDB-based state locking in favor of native S3 locking using: `use_lockfile = true`. Terraform's official documentation states that DynamoDB locking is deprecated and will be removed in a future release. Native S3 locking is now the recommended approach.
+
+```powershell
+╷
+│ Warning: Deprecated Parameter
+│ 
+│   on main.tf line 3, in terraform:
+│    3:     backend "s3" {
+│ 
+│ The parameter "dynamodb_table" is deprecated. Use parameter "use_lockfile" instead.
+```
+
+
+
 ### Apply dev environment
 
 ```powershell
@@ -74,6 +90,32 @@ If you need to change the region or override defaults:
 terraform init -backend-config=../conf/backend-dev.conf -reconfigure
 terraform apply -var="aws_region=ap-south-1"
 ```
+
+# Destroy instructions
+
+### Destroy dev environment
+
+Run the destroy from the dev environment folder using the same backend config as apply:
+
+```powershell
+cd terraform-projects/aws/remote_state/environments/dev
+terraform init -backend-config=../conf/backend-dev.conf
+terraform destroy -var="aws_region=ap-south-1"
+```
+
+This destroys the resources managed in `environments/dev` and leaves the remote state backend intact.
+
+### Destroy bootstrap backend
+
+After the dev environment is destroyed and the state is no longer needed, destroy the bootstrap backend resources:
+
+```powershell
+cd terraform-projects/aws/remote_state/bootstrap
+terraform init
+terraform destroy
+```
+
+Destroying bootstrap will remove the S3 state bucket and the DynamoDB lock table. Only do this after all environment state has been cleaned up.
 
 ## Notes
 
